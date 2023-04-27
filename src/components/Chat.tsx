@@ -4,7 +4,7 @@ interface ChatProps {}
 
 type Message = {
   content: string;
-  user: "me" | "ai";
+  user: "user" | "ai";
 };
 
 export const Chat: React.FC<ChatProps> = () => {
@@ -12,7 +12,7 @@ export const Chat: React.FC<ChatProps> = () => {
   const [messages, setMessages] = useState<Message[]>([]);
 
   async function sendMessage() {
-    const response = await fetch("/api/chat", {
+    const response = await fetch("/api/unblend", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message }),
@@ -22,7 +22,7 @@ export const Chat: React.FC<ChatProps> = () => {
       const data = await response.json();
       setMessages([
         ...messages,
-        { content: message, user: "me" },
+        { content: message, user: "user" },
         { content: data.reply, user: "ai" },
       ]);
       setMessage("");
@@ -34,7 +34,7 @@ export const Chat: React.FC<ChatProps> = () => {
       <div>
         {messages.map((msg, index) => (
           <div key={index}>
-            <strong>{msg.user === "me" ? "You" : "AI"}: </strong>
+            <strong>{msg.user === "user" ? "You" : "AI"}: </strong>
             {msg.content}
           </div>
         ))}
