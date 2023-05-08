@@ -130,19 +130,12 @@ export async function taskExecutionAgent(
   console.log("Rule check: " + ruleCheck);
   const ruleViolations = ruleCheck?.startsWith("Yes");
   if (ruleViolations) {
-    const gptResponse = await openai.createChatCompletion({
-      model: "gpt-3.5-turbo",
-      messages: [
-        { role: "system", content: enriched_system_prompt },
-        { role: "user", content: userPrompt },
-        { role: "assistant", content: gptReply },
-        {
-          role: "system",
-          content: `We have found rule violations in your previous response as listed here: ${ruleCheck}. Please rewrite your previous response accordingly and respond as if you were the original agent.`,
-        },
-      ],
-    });
-    gptReply = gptResponse.data.choices[0].message?.content;
+    const fixedReply = await ruleFixerAgent(
+      ruleCheck,
+      gptReply,
+      supabaseClient
+    );
+    gptReply = fixedReply;
     console.log("Fixed assistant reply: " + gptReply);
   }
   return gptReply;
@@ -243,12 +236,43 @@ export async function languageGuidelineEnforcer(
 3.	You shall refrain from using IFS or other mental health jargon unless the user has already introduced it.
 4.	You shall only ask one question at a time.
 5.	You shall limit your responses to twenty words maximum unless the exception agent tells you otherwise.
-
-If there are no rule violations respond with a simple 'No' followed by a period. If there are rule violations respond with a simple 'Yes' followed by a period, and then your justification as to why the rule[s] has been violated.`,
+If there are no rule violations respond with a simple 'No' followed by a period. If there are rule violations respond with a simple 'Yes' followed by a period, and then your justification as to why the rule[s] has been violated. Make sure to list ALL rule violations.`,
       },
       {
         role: "user",
         content: gptReply,
+      },
+    ],
+  });
+  const response = gptResponse.data.choices[0].message?.content;
+  return response;
+}
+
+export async function ruleFixerAgent(
+  ruleCheck: string,
+  originalReply: string,
+  supabaseClient: SupabaseClient
+) {
+  const gptResponse = await openai.createChatCompletion({
+    model: "gpt-3.5-turbo",
+    messages: [
+      {
+        role: "system",
+        content: `You are a rule fixer agent. Your goal is to fix the rule violations of another agent. Respond to prompts as if you were the original agent. Here are the rules for reference:
+        1.	You shall not assign causes to a user’s experience. 
+2.	You shall stick to factual information such as what the user is feeling, thinking, or sensing. 
+3.	You shall refrain from using IFS or other mental health jargon unless the user has already introduced it.
+4.	You shall only ask one question at a time.
+5.	You shall limit your responses to twenty words maximum unless the exception agent tells you otherwise.`,
+      },
+      {
+        role: "user",
+        content: "This is the agent's original response: " + originalReply,
+      },
+      {
+        role: "assistant",
+        content:
+          "These are the rule violations and any suggestions: " + ruleCheck,
       },
     ],
   });
