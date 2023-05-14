@@ -126,18 +126,6 @@ export async function taskExecutionAgent(
   });
   let gptReply = gptResponse.data.choices[0].message?.content;
   console.log("Assistant reply: " + gptReply);
-  const ruleCheck = await languageGuidelineEnforcer(gptReply, supabaseClient);
-  console.log("Rule check: " + ruleCheck);
-  const ruleViolations = ruleCheck?.startsWith("Yes");
-  if (ruleViolations) {
-    const fixedReply = await ruleFixerAgent(
-      ruleCheck,
-      gptReply,
-      supabaseClient
-    );
-    gptReply = fixedReply;
-    console.log("Fixed assistant reply: " + gptReply);
-  }
   return gptReply;
 }
 

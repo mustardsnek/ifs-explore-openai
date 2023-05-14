@@ -1,6 +1,9 @@
 {
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
+  "typescript.tsserver.useSyntaxServer": "always",
+  "css.lint.unknownAtRules": "ignore",
+  "css.lint.validProperties": ["composes"],
   "editor.codeActionsOnSave": {
     "source.fixAll": true,
     "source.organizeImports": true
