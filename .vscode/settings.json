@@ -5,8 +5,8 @@
   "css.lint.unknownAtRules": "ignore",
   "css.lint.validProperties": ["composes"],
   "editor.codeActionsOnSave": {
-    "source.fixAll": true,
-    "source.organizeImports": true
+    "source.fixAll": "explicit",
+    "source.organizeImports": "explicit"
   },
   "liveSassCompile.settings.formats": [
     {
